@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import requests
 
 app = Flask(__name__)
 
@@ -10,6 +11,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializar la base de datos
 db = SQLAlchemy(app)
+
+# URL del backend central para reenviar datos
+CENTRAL_BACKEND_URL = 'https://backend-central-url.com/api/v1/recibir_datos'
 
 # Definir el modelo de la base de datos para guardar los datos de los sensores
 class SensorData(db.Model):
@@ -68,8 +72,26 @@ def recibir_datos():
     # Guardar los cambios en la base de datos
     db.session.commit()
 
+    # Reenviar los datos al backend central
+    payload = {
+        "device_id": device_id,
+        "velocidad": velocidad,
+        "temperatura": temperatura,
+        "presion": presion,
+        "combustible": combustible
+    }
+    
+    try:
+        response = requests.post(CENTRAL_BACKEND_URL, json=payload, timeout=5)
+        if response.status_code == 200:
+            print("Datos enviados al backend central con éxito.")
+        else:
+            print(f"Error al enviar datos al backend central: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error de conexión con el backend central: {e}")
+
     # Responder al ESP32 que los datos se recibieron correctamente
-    return jsonify({"status": "success", "message": "Datos recibidos exitosamente", "device_id": device_id})
+    return jsonify({"status": "success", "message": "Datos recibidos y reenviados al backend central", "device_id": device_id})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
