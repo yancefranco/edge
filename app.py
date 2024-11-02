@@ -12,8 +12,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Inicializar la base de datos
 db = SQLAlchemy(app)
 
-# URL del backend central para reenviar datos
-CENTRAL_BACKEND_URL = 'https://backend-central-url.com/api/v1/recibir_datos'
+# URL del backend central
+CENTRAL_BACKEND_URL = 'https://backendcentral.onrender.com/api/v1/recibir_datos'
 
 # Definir el modelo de la base de datos para guardar los datos de los sensores
 class SensorData(db.Model):
@@ -95,3 +95,4 @@ def recibir_datos():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
